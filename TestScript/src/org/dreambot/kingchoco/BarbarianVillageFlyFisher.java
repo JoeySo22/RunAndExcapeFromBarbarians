@@ -86,14 +86,33 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         {
             return PlayerState.WALK_TO_BANK;
         }
-        else if (playerHasFeathers && playerHasFlyFishingRod && playerHasFullInventory)
+        if (playerHasFeathers && playerHasFlyFishingRod)
         {
-            return PlayerState.WALK_TO_BANK;
+            if (playerHasFullInventory)
+            {
+                if (playerInBankingTile)
+                {
+                    return PlayerState.BANKING;
+                }
+                else
+                {
+                    return PlayerState.WALK_TO_BANK;
+                }
+            }
+            if (!playerHasFullInventory)
+            {
+                if (playerInFishingTile)
+                {
+                    return PlayerState.FISHING;
+                }
+                else
+                {
+                    return PlayerState.WALKING_TO_FISHING_SPOT;
+                }
+            }
         }
-        else if (playerHasFeathers && playerHasFlyFishingRod && !playerHasFullInventory)
-        {
-            return PlayerState.WALKING_TO_FISHING_SPOT;
-        }
+
+
         return PlayerState.WALK_TO_BANK;
         log("checkPlayerState exit.");
     }
