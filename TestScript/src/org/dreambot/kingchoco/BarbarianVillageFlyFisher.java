@@ -9,6 +9,7 @@ import org.dreambot.api.methods.walking.impl.Walking;
 import org.dreambot.api.script.AbstractScript;
 import org.dreambot.api.script.Category;
 import org.dreambot.api.script.ScriptManifest;
+import org.dreambot.api.wrappers.interactive.NPC;
 import org.dreambot.api.wrappers.interactive.Player;
 
 import java.util.concurrent.TimeUnit;
@@ -22,10 +23,7 @@ public class BarbarianVillageFlyFisher extends AbstractScript
     private final int FLY_FISHING_ROD_ID = 309;
     private final int FEATHERS_ID = 814;
     private final int FISHING_ANIMATION_ID = 623;
-    private final int RAW_TROUT_ID = 335;
-    private final int RAW_SALMON_ID = 331;
-    private final int COOKED_TROUT_ID = 333;
-    private final int COOKED_SALMON_ID = 329;
+    private final int ROD_FISHING_SPOT_ID = 1526;
 
     private boolean playerInFishingTile;
     private boolean playerInBankingTile;
@@ -36,7 +34,6 @@ public class BarbarianVillageFlyFisher extends AbstractScript
     private enum PlayerState
     {
         WALK_TO_BANK, WALKING_TO_FISHING_SPOT, FISHING, BANKING;
-
     }
 
     private Inventory inventory;
@@ -125,10 +122,10 @@ public class BarbarianVillageFlyFisher extends AbstractScript
                 }
             }
         }
-
-
+        else {
+            return PlayerState.WALK_TO_BANK;
+        }
         return PlayerState.WALK_TO_BANK;
-        log("checkPlayerState exit.");
     }
 
     private void updateStatus()
@@ -150,7 +147,7 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         bank.depositAllExcept(FLY_FISHING_ROD_ID, FEATHERS_ID);
         if (!playerHasFeathers)
         {
-            if (!bank.withdraw(FEATHERS_ID, 3000)
+            if (!bank.withdraw(FEATHERS_ID, 3000))
             {
                 stop();
             }
@@ -169,9 +166,16 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         currentState = PlayerState.FISHING;
     }
 
+    private void walkingToBank()
+    {
+        walkTo(EDGEVILLE_BANKING_AREA.getRandomTile(), true);
+        currentState = PlayerState.BANKING;
+    }
+
     private void fishing()
     {
-        // <<<<<<<<<<<< CONTINUE HERE
+        NPC rodFishingSpot = getNpcs().closest(ROD_FISHING_SPOT_ID);
+        rodFishingSpot.interact("Lure");
     }
 
     private void walkTo(Tile tile, boolean walking)
@@ -196,11 +200,10 @@ public class BarbarianVillageFlyFisher extends AbstractScript
     }
 
     @Override
-    public void stop() {
+    public void stop()
+    {
         super.stop();
     }
 
-    private long randomNumberGenerator() {
-        return Math.round(Math.random() * 2000) + 5000;
-    }
+    private long randomNumberGenerator() { return Math.round(Math.random() * 2000) + 5000; }
 }
