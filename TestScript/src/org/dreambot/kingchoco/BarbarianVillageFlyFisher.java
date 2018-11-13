@@ -174,6 +174,12 @@ public class BarbarianVillageFlyFisher extends AbstractScript
 
     private void fishing()
     {
+        /*
+            I need to create a control flow.
+            1. I don't need to keep pressing the fishing spot button.
+            2. If the fishing spot moves, get another spot.
+            3. If the inventory is full, go to bank.
+         */
         NPC rodFishingSpot = getNpcs().closest(ROD_FISHING_SPOT_ID);
         rodFishingSpot.interact("Lure");
     }
