@@ -9,6 +9,7 @@ import org.dreambot.api.methods.walking.impl.Walking;
 import org.dreambot.api.script.AbstractScript;
 import org.dreambot.api.script.Category;
 import org.dreambot.api.script.ScriptManifest;
+import org.dreambot.api.wrappers.interactive.GameObject;
 import org.dreambot.api.wrappers.interactive.NPC;
 import org.dreambot.api.wrappers.interactive.Player;
 
@@ -174,14 +175,13 @@ public class BarbarianVillageFlyFisher extends AbstractScript
 
     private void fishing()
     {
-        /*
-            I need to create a control flow.
-            1. I don't need to keep pressing the fishing spot button.
-            2. If the fishing spot moves, get another spot.
-            3. If the inventory is full, go to bank.
-         */
-        NPC rodFishingSpot = getNpcs().closest(ROD_FISHING_SPOT_ID);
-        rodFishingSpot.interact("Lure");
+        while (!this.playerHasFullInventory)
+        {
+            NPC rodFishingSpot = getNpcs().closest(ROD_FISHING_SPOT_ID);
+            rodFishingSpot.interact("Lure");
+
+            this.playerHasFullInventory = getInventory().isFull();
+        }
     }
 
     private void walkTo(Tile tile, boolean walking)
