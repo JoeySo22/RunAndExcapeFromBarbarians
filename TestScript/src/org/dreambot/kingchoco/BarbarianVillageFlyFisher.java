@@ -21,8 +21,6 @@ public class BarbarianVillageFlyFisher extends AbstractScript
     private final int FISHING_ANIMATION_ID = 623;
     private final int RAW_TROUT_ID = 335;
     private final int RAW_SALMON_ID = 331;
-    private final int COOKED_TROUT_ID = 333;
-    private final int COOKED_SALMON_ID = 329;
 
     private enum PlayerState
     {
@@ -86,15 +84,16 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         {
             return PlayerState.WALK_TO_BANK;
         }
-        else if (playerHasFeathers && playerHasFlyFishingRod && playerHasFullInventory)
+        if (playerHasFeathers && playerHasFlyFishingRod && playerHasFullInventory)
         {
             return PlayerState.WALK_TO_BANK;
         }
-        else if (playerHasFeathers && playerHasFlyFishingRod && !playerHasFullInventory)
+        if (playerHasFeathers && playerHasFlyFishingRod && !playerHasFullInventory)
         {
             return PlayerState.WALKING_TO_FISHING_SPOT;
         }
-        return PlayerState.WALK_TO_BANK;
+        if (playerInFishingTile && !playerHasFullInventory)
+            return PlayerState.WALK_TO_BANK;
         log("checkPlayerState exit.");
     }
 }
