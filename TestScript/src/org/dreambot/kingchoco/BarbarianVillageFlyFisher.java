@@ -26,18 +26,22 @@ public class BarbarianVillageFlyFisher extends AbstractScript
     private final int RAW_SALMON_ID = 331;
     private final int COOKED_TROUT_ID = 333;
     private final int COOKED_SALMON_ID = 329;
+
     private boolean playerInFishingTile;
     private boolean playerInBankingTile;
     private boolean playerHasFlyFishingRod;
     private boolean playerHasFeathers;
     private boolean playerHasFullInventory;
-    private Inventory inventory;
-    private Tile currentPlayerTile;
 
     private enum PlayerState
     {
         WALK_TO_BANK, WALKING_TO_FISHING_SPOT, FISHING, BANKING;
+
     }
+
+    private Inventory inventory;
+
+    private Tile currentPlayerTile;
 
     private PlayerState currentState;
 
