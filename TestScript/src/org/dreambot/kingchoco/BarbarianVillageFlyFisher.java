@@ -179,7 +179,7 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         {
             NPC rodFishingSpot = getNpcs().closest(ROD_FISHING_SPOT_ID);
             rodFishingSpot.interact("Lure");
-
+            // <<<<<<<<< Continue here
             this.playerHasFullInventory = getInventory().isFull();
         }
     }
