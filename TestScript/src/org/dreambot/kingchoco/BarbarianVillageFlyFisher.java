@@ -22,7 +22,6 @@ public class BarbarianVillageFlyFisher extends AbstractScript
     private final Area EDGEVILLE_BANKING_AREA = new Area(new Tile(3094, 3493), new Tile(3091, 3488));
     private final int FLY_FISHING_ROD_ID = 309;
     private final int FEATHERS_ID = 814;
-    private final int FISHING_ANIMATION_ID = 623;
     private final int ROD_FISHING_SPOT_ID = 1526;
 
     private boolean playerInFishingTile;
