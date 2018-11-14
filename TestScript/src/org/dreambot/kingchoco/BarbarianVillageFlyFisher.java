@@ -179,7 +179,7 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         {
             NPC rodFishingSpot = getNpcs().closest(ROD_FISHING_SPOT_ID);
             rodFishingSpot.interact("Lure");
-            // <<<<<<<<< Continue here
+            currentlyFishingDelay();// <<<<<<<<< Continue here
             this.playerHasFullInventory = getInventory().isFull();
         }
     }
@@ -203,6 +203,18 @@ public class BarbarianVillageFlyFisher extends AbstractScript
             }
         }
         log("Stopped walkTo.");
+    }
+
+    private void currentlyFishingDelay()
+    {
+        do
+        {
+            TimeUnit.MILLISECONDS.wait(3000);
+        }
+        while (!localPlayer.isStandingStill())
+        {
+            TimeUnit.MILLISECONDS.wait(1000);
+        }
     }
 
     @Override
