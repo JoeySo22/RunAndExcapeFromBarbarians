@@ -179,7 +179,7 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         {
             NPC rodFishingSpot = getNpcs().closest(ROD_FISHING_SPOT_ID);
             rodFishingSpot.interact("Lure");
-            currentlyFishingDelay();// <<<<<<<<< Continue here
+            currentlyFishingDelay();
             this.playerHasFullInventory = getInventory().isFull();
         }
     }
@@ -209,11 +209,11 @@ public class BarbarianVillageFlyFisher extends AbstractScript
     {
         do
         {
-            TimeUnit.MILLISECONDS.wait(3000);
+            TimeUnit.MILLISECONDS.sleep(randomNumberGenerator());
         }
         while (!localPlayer.isStandingStill())
         {
-            TimeUnit.MILLISECONDS.wait(1000);
+            TimeUnit.MILLISECONDS.sleep(randomNumberGenerator());
         }
     }
 
