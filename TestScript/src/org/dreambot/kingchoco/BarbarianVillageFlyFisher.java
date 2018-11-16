@@ -29,11 +29,13 @@ public class BarbarianVillageFlyFisher extends AbstractScript
     private boolean playerHasFlyFishingRod;
     private boolean playerHasFeathers;
     private boolean playerHasFullInventory;
-
     private enum PlayerState
     {
         WALK_TO_BANK, WALKING_TO_FISHING_SPOT, FISHING, BANKING;
+
     }
+
+    private Bank edgevilleBank;
 
     private Inventory inventory;
 
@@ -45,8 +47,6 @@ public class BarbarianVillageFlyFisher extends AbstractScript
 
     private Player localPlayer;
 
-    private BankLocation edgevilleBank;
-
     @Override
     public void onStart()
     {
@@ -54,7 +54,8 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         super.onStart();
         this.walkingObject = getWalking();
         this.localPlayer = getLocalPlayer();
-        this.edgevilleBank = BankLocation.EDGEVILLE;
+        this.edgevilleBank = getBank();
+        log("onStart finished.");
     }
 
     @Override
@@ -89,10 +90,12 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         {
             if (playerInBankingTile)
             {
+                log("checkPlayerState - BANKING.");
                 return PlayerState.BANKING;
             }
             else
             {
+                log("checkPlayerState - WALK_TO_BANK");
                 return PlayerState.WALK_TO_BANK;
             }
         }
@@ -102,10 +105,12 @@ public class BarbarianVillageFlyFisher extends AbstractScript
             {
                 if (playerInBankingTile)
                 {
+                    log("checkPlayerState - BANKING");
                     return PlayerState.BANKING;
                 }
                 else
                 {
+                    log("checkPlayerState - WALK_TO_BANK");
                     return PlayerState.WALK_TO_BANK;
                 }
             }
@@ -113,22 +118,27 @@ public class BarbarianVillageFlyFisher extends AbstractScript
             {
                 if (playerInFishingTile)
                 {
+                    log("checkPlayerState - FISHING");
                     return PlayerState.FISHING;
                 }
                 else
                 {
+                    log("checkPlayerState - WALKING_TO_FISHING_SPOT");
                     return PlayerState.WALKING_TO_FISHING_SPOT;
                 }
             }
         }
         else {
+            log(("checkPlayerState - WALK_TO_BANK"));
             return PlayerState.WALK_TO_BANK;
         }
+        log("checkPlayerState - WALK_TO_BANK");
         return PlayerState.WALK_TO_BANK;
     }
 
     private void updateStatus()
     {
+        log("updateStatus called.");
         this.inventory = getInventory();
         this.currentPlayerTile = getLocalPlayer().getTile();
         this.playerInFishingTile = BARBARIAN_FISHING_AREA.contains(currentPlayerTile);
@@ -136,43 +146,47 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         this.playerHasFlyFishingRod = inventory.contains(FLY_FISHING_ROD_ID);
         this.playerHasFeathers = inventory.contains(FEATHERS_ID);
         this.playerHasFullInventory = inventory.isFull();
+        log("updateStatus exited.");
     }
 
     private void banking()
     {
         log("banking activated.");
-        updateStatus();
-        Bank bank = getBank();
-        bank.depositAllExcept(FLY_FISHING_ROD_ID, FEATHERS_ID);
+        this.edgevilleBank.openClosest();
+        this.edgevilleBank.depositAllExcept(FLY_FISHING_ROD_ID, FEATHERS_ID);
         if (!playerHasFeathers)
         {
-            if (!bank.withdraw(FEATHERS_ID, 3000))
+            if (!this.edgevilleBank.withdraw(FEATHERS_ID, 3000))
             {
+                log("stop called.");
                 stop();
             }
         }
         if (!playerHasFlyFishingRod)
         {
-            bank.withdraw(FLY_FISHING_ROD_ID);
+            this.edgevilleBank.withdraw(FLY_FISHING_ROD_ID);
         }
-        bank.close();
-        currentState = PlayerState.WALKING_TO_FISHING_SPOT;
+        this.edgevilleBank.close();
+        log("banking de-activated.");
     }
 
     private void walkingToFishingSpot()
     {
+        log("walkingToFishingSpot called.");
         walkTo(BARBARIAN_FISHING_AREA.getRandomTile(), true);
-        currentState = PlayerState.FISHING;
+        log("walkingToFishingSpot exited.");
     }
 
     private void walkingToBank()
     {
+        log("walkingToBank called.");
         walkTo(EDGEVILLE_BANKING_AREA.getRandomTile(), true);
-        currentState = PlayerState.BANKING;
+        log("walkingToBank exited");
     }
 
     private void fishing()
     {
+        log("fishing called.");
         while (!this.playerHasFullInventory)
         {
             NPC rodFishingSpot = getNpcs().closest(ROD_FISHING_SPOT_ID);
@@ -180,6 +194,7 @@ public class BarbarianVillageFlyFisher extends AbstractScript
             currentlyFishingDelay();
             this.playerHasFullInventory = getInventory().isFull();
         }
+        log("fishing exited.");
     }
 
     private void walkTo(Tile tile, boolean walking)
@@ -205,14 +220,19 @@ public class BarbarianVillageFlyFisher extends AbstractScript
 
     private void currentlyFishingDelay()
     {
-        do
-        {
-            TimeUnit.MILLISECONDS.sleep(randomNumberGenerator());
-        }
+        log("currentlyFishingDelay called.");
         while (!localPlayer.isStandingStill())
         {
-            TimeUnit.MILLISECONDS.sleep(randomNumberGenerator());
+            try
+            {
+                TimeUnit.MILLISECONDS.sleep(randomNumberGenerator());
+            }
+            catch (InterruptedException e)
+            {
+                log("Did not sleep.");
+            }
         }
+        log("currentlyFishingDelay exited");
     }
 
     @Override
