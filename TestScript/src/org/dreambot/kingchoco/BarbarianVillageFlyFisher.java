@@ -18,17 +18,20 @@ import java.util.concurrent.TimeUnit;
         "and banks them", category = Category.FISHING, author = "KingChoco")
 public class BarbarianVillageFlyFisher extends AbstractScript
 {
-    private final Area BARBARIAN_FISHING_AREA = new Area(new Tile(3109, 3439), new Tile(3100, 3422));
-    private final Area EDGEVILLE_BANKING_AREA = new Area(new Tile(3094, 3493), new Tile(3091, 3488));
+    private final Area BARBARIAN_FISHING_AREA = new Area(new Tile(3104, 3435), new Tile(3105, 3430));
+    private final Area EDGEVILLE_BANKING_AREA = new Area(new Tile(3093, 3492), new Tile(3094, 3488));
     private final int FLY_FISHING_ROD_ID = 309;
-    private final int FEATHERS_ID = 814;
+    private final int FEATHERS_ID = 314;
     private final int ROD_FISHING_SPOT_ID = 1526;
+    private final int CAMERA_PITCH = 383;
+    private final int CAMERA_YAW = 1366;
 
     private boolean playerInFishingTile;
     private boolean playerInBankingTile;
     private boolean playerHasFlyFishingRod;
     private boolean playerHasFeathers;
     private boolean playerHasFullInventory;
+
     private enum PlayerState
     {
         WALK_TO_BANK, WALKING_TO_FISHING_SPOT, FISHING, BANKING;
@@ -67,16 +70,12 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         {
             case BANKING:
                 banking();
-                break;
             case WALKING_TO_FISHING_SPOT:
                 walkingToFishingSpot();
-                break;
             case FISHING:
-            fishing();
-            break;
+                fishing();
             case WALK_TO_BANK:
-            walkingToBank();
-            break;
+                walkingToBank();
         }
         log("onLoop ends.");
         return 0;
@@ -173,20 +172,23 @@ public class BarbarianVillageFlyFisher extends AbstractScript
     private void walkingToFishingSpot()
     {
         log("walkingToFishingSpot called.");
-        walkTo(BARBARIAN_FISHING_AREA.getRandomTile(), true);
+        walkTo(BARBARIAN_FISHING_AREA.getRandomTile());
+        updateStatus();
         log("walkingToFishingSpot exited.");
     }
 
     private void walkingToBank()
     {
         log("walkingToBank called.");
-        walkTo(EDGEVILLE_BANKING_AREA.getRandomTile(), true);
+        walkTo(EDGEVILLE_BANKING_AREA.getRandomTile());
+        updateStatus();
         log("walkingToBank exited");
     }
 
     private void fishing()
     {
         log("fishing called.");
+        getCamera().rotateTo(CAMERA_PITCH,CAMERA_YAW);
         while (!this.playerHasFullInventory)
         {
             NPC rodFishingSpot = getNpcs().closest(ROD_FISHING_SPOT_ID);
@@ -194,16 +196,20 @@ public class BarbarianVillageFlyFisher extends AbstractScript
             currentlyFishingDelay();
             this.playerHasFullInventory = getInventory().isFull();
         }
+        updateStatus();
         log("fishing exited.");
     }
 
-    private void walkTo(Tile tile, boolean walking)
+    private void walkTo(Tile tile)
     {
         log("walkTo: " + tile.toString());
+
+        ensureWalking();
 
         int steps = 1;
         while (!localPlayer.getTile().equals(tile))
         {
+            ensureWalking();
             log("Step..." + String.valueOf(steps));
             steps++;
             walkingObject.walk(tile);
@@ -221,6 +227,7 @@ public class BarbarianVillageFlyFisher extends AbstractScript
     private void currentlyFishingDelay()
     {
         log("currentlyFishingDelay called.");
+        this.localPlayer = getLocalPlayer();
         while (!localPlayer.isStandingStill())
         {
             try
@@ -233,6 +240,12 @@ public class BarbarianVillageFlyFisher extends AbstractScript
             }
         }
         log("currentlyFishingDelay exited");
+    }
+
+    private void ensureWalking()
+    {
+        if (walkingObject.isRunEnabled())
+            walkingObject.toggleRun();
     }
 
     @Override
