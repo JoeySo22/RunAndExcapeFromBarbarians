@@ -156,6 +156,7 @@ public class BarbarianVillageFlyFisher extends AbstractScript
             bank.withdraw(FLY_FISHING_ROD_ID);
         }
         bank.close();
+        log("banking de-activated.");
         currentState = PlayerState.WALKING_TO_FISHING_SPOT;
     }
 
@@ -205,13 +206,16 @@ public class BarbarianVillageFlyFisher extends AbstractScript
 
     private void currentlyFishingDelay()
     {
-        do
+        try
         {
-            TimeUnit.MILLISECONDS.sleep(randomNumberGenerator());
+            while (!localPlayer.isStandingStill())
+            {
+                TimeUnit.MILLISECONDS.sleep(randomNumberGenerator());
+            }
         }
-        while (!localPlayer.isStandingStill())
+        catch (InterruptedException e)
         {
-            TimeUnit.MILLISECONDS.sleep(randomNumberGenerator());
+            log("Didn't fish-delay.");
         }
     }
 
