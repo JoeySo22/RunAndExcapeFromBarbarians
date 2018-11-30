@@ -3,6 +3,7 @@ package org.dreambot.kingchoco;
 import org.dreambot.api.methods.container.impl.Inventory;
 import org.dreambot.api.methods.container.impl.bank.Bank;
 import org.dreambot.api.methods.container.impl.bank.BankLocation;
+import org.dreambot.api.methods.dialogues.Dialogues;
 import org.dreambot.api.methods.map.Area;
 import org.dreambot.api.methods.map.Tile;
 import org.dreambot.api.methods.walking.impl.Walking;
@@ -31,6 +32,7 @@ public class BarbarianVillageFlyFisher extends AbstractScript
     private boolean playerHasFlyFishingRod;
     private boolean playerHasFeathers;
     private boolean playerHasFullInventory;
+    private boolean playerInDialogue;
 
     private enum PlayerState
     {
@@ -50,6 +52,8 @@ public class BarbarianVillageFlyFisher extends AbstractScript
 
     private Player localPlayer;
 
+    private Dialogues dialogues;
+
     @Override
     public void onStart()
     {
@@ -58,6 +62,7 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         this.walkingObject = getWalking();
         this.localPlayer = getLocalPlayer();
         this.edgevilleBank = getBank();
+        this.dialogues = getDialogues();
         log("onStart finished.");
     }
 
@@ -189,13 +194,14 @@ public class BarbarianVillageFlyFisher extends AbstractScript
     {
         log("fishing called.");
         getCamera().rotateTo(CAMERA_PITCH,CAMERA_YAW);
-        while (!this.playerHasFullInventory)
+        while (!this.playerHasFullInventory && !this.dialogues.inDialogue())
         {
             NPC rodFishingSpot = getNpcs().closest(ROD_FISHING_SPOT_ID);
             rodFishingSpot.interact("Lure");
             currentlyFishingDelay();
             this.playerHasFullInventory = getInventory().isFull();
         }
+        this.dialogues.clickContinue();
         updateStatus();
         log("fishing exited.");
     }
@@ -228,7 +234,7 @@ public class BarbarianVillageFlyFisher extends AbstractScript
     {
         log("currentlyFishingDelay called.");
         this.localPlayer = getLocalPlayer();
-        while (!localPlayer.isStandingStill())
+        while (!this.localPlayer.isStandingStill())
         {
             try
             {
