@@ -18,11 +18,13 @@ import java.util.concurrent.TimeUnit;
         "and banks them", category = Category.FISHING, author = "KingChoco")
 public class BarbarianVillageFlyFisher extends AbstractScript
 {
-    private final Area BARBARIAN_FISHING_AREA = new Area(new Tile(3109, 3439), new Tile(3100, 3422));
-    private final Area EDGEVILLE_BANKING_AREA = new Area(new Tile(3094, 3493), new Tile(3091, 3488));
+    private final Area BARBARIAN_FISHING_AREA = new Area(new Tile(3104, 3435), new Tile(3105, 3430));
+    private final Area EDGEVILLE_BANKING_AREA = new Area(new Tile(3093, 3492), new Tile(3094, 3488));
     private final int FLY_FISHING_ROD_ID = 309;
-    private final int FEATHERS_ID = 814;
+    private final int FEATHERS_ID = 314;
     private final int ROD_FISHING_SPOT_ID = 1526;
+    private final int CAMERA_PITCH = 383;
+    private final int CAMERA_YAW = 1366;
 
     private boolean playerInFishingTile;
     private boolean playerInBankingTile;
@@ -33,7 +35,10 @@ public class BarbarianVillageFlyFisher extends AbstractScript
     private enum PlayerState
     {
         WALK_TO_BANK, WALKING_TO_FISHING_SPOT, FISHING, BANKING;
+
     }
+
+    private Bank edgevilleBank;
 
     private Inventory inventory;
 
@@ -45,8 +50,6 @@ public class BarbarianVillageFlyFisher extends AbstractScript
 
     private Player localPlayer;
 
-    private BankLocation edgevilleBank;
-
     @Override
     public void onStart()
     {
@@ -54,7 +57,8 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         super.onStart();
         this.walkingObject = getWalking();
         this.localPlayer = getLocalPlayer();
-        this.edgevilleBank = BankLocation.EDGEVILLE;
+        this.edgevilleBank = getBank();
+        log("onStart finished.");
     }
 
     @Override
@@ -66,16 +70,12 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         {
             case BANKING:
                 banking();
-                break;
             case WALKING_TO_FISHING_SPOT:
                 walkingToFishingSpot();
-                break;
             case FISHING:
-            fishing();
-            break;
+                fishing();
             case WALK_TO_BANK:
-            walkingToBank();
-            break;
+                walkingToBank();
         }
         log("onLoop ends.");
         return 0;
@@ -89,10 +89,12 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         {
             if (playerInBankingTile)
             {
+                log("checkPlayerState - BANKING.");
                 return PlayerState.BANKING;
             }
             else
             {
+                log("checkPlayerState - WALK_TO_BANK");
                 return PlayerState.WALK_TO_BANK;
             }
         }
@@ -102,10 +104,12 @@ public class BarbarianVillageFlyFisher extends AbstractScript
             {
                 if (playerInBankingTile)
                 {
+                    log("checkPlayerState - BANKING");
                     return PlayerState.BANKING;
                 }
                 else
                 {
+                    log("checkPlayerState - WALK_TO_BANK");
                     return PlayerState.WALK_TO_BANK;
                 }
             }
@@ -113,22 +117,27 @@ public class BarbarianVillageFlyFisher extends AbstractScript
             {
                 if (playerInFishingTile)
                 {
+                    log("checkPlayerState - FISHING");
                     return PlayerState.FISHING;
                 }
                 else
                 {
+                    log("checkPlayerState - WALKING_TO_FISHING_SPOT");
                     return PlayerState.WALKING_TO_FISHING_SPOT;
                 }
             }
         }
         else {
+            log(("checkPlayerState - WALK_TO_BANK"));
             return PlayerState.WALK_TO_BANK;
         }
+        log("checkPlayerState - WALK_TO_BANK");
         return PlayerState.WALK_TO_BANK;
     }
 
     private void updateStatus()
     {
+        log("updateStatus called.");
         this.inventory = getInventory();
         this.currentPlayerTile = getLocalPlayer().getTile();
         this.playerInFishingTile = BARBARIAN_FISHING_AREA.contains(currentPlayerTile);
@@ -136,44 +145,50 @@ public class BarbarianVillageFlyFisher extends AbstractScript
         this.playerHasFlyFishingRod = inventory.contains(FLY_FISHING_ROD_ID);
         this.playerHasFeathers = inventory.contains(FEATHERS_ID);
         this.playerHasFullInventory = inventory.isFull();
+        log("updateStatus exited.");
     }
 
     private void banking()
     {
         log("banking activated.");
-        updateStatus();
-        Bank bank = getBank();
-        bank.depositAllExcept(FLY_FISHING_ROD_ID, FEATHERS_ID);
+        this.edgevilleBank.openClosest();
+        this.edgevilleBank.depositAllExcept(FLY_FISHING_ROD_ID, FEATHERS_ID);
         if (!playerHasFeathers)
         {
-            if (!bank.withdraw(FEATHERS_ID, 3000))
+            if (!this.edgevilleBank.withdraw(FEATHERS_ID, 3000))
             {
+                log("stop called.");
                 stop();
             }
         }
         if (!playerHasFlyFishingRod)
         {
-            bank.withdraw(FLY_FISHING_ROD_ID);
+            this.edgevilleBank.withdraw(FLY_FISHING_ROD_ID);
         }
-        bank.close();
+        this.edgevilleBank.close();
         log("banking de-activated.");
-        currentState = PlayerState.WALKING_TO_FISHING_SPOT;
     }
 
     private void walkingToFishingSpot()
     {
-        walkTo(BARBARIAN_FISHING_AREA.getRandomTile(), true);
-        currentState = PlayerState.FISHING;
+        log("walkingToFishingSpot called.");
+        walkTo(BARBARIAN_FISHING_AREA.getRandomTile());
+        updateStatus();
+        log("walkingToFishingSpot exited.");
     }
 
     private void walkingToBank()
     {
-        walkTo(EDGEVILLE_BANKING_AREA.getRandomTile(), true);
-        currentState = PlayerState.BANKING;
+        log("walkingToBank called.");
+        walkTo(EDGEVILLE_BANKING_AREA.getRandomTile());
+        updateStatus();
+        log("walkingToBank exited");
     }
 
     private void fishing()
     {
+        log("fishing called.");
+        getCamera().rotateTo(CAMERA_PITCH,CAMERA_YAW);
         while (!this.playerHasFullInventory)
         {
             NPC rodFishingSpot = getNpcs().closest(ROD_FISHING_SPOT_ID);
@@ -181,15 +196,20 @@ public class BarbarianVillageFlyFisher extends AbstractScript
             currentlyFishingDelay();
             this.playerHasFullInventory = getInventory().isFull();
         }
+        updateStatus();
+        log("fishing exited.");
     }
 
-    private void walkTo(Tile tile, boolean walking)
+    private void walkTo(Tile tile)
     {
         log("walkTo: " + tile.toString());
+
+        ensureWalking();
 
         int steps = 1;
         while (!localPlayer.getTile().equals(tile))
         {
+            ensureWalking();
             log("Step..." + String.valueOf(steps));
             steps++;
             walkingObject.walk(tile);
@@ -206,17 +226,26 @@ public class BarbarianVillageFlyFisher extends AbstractScript
 
     private void currentlyFishingDelay()
     {
-        try
+        log("currentlyFishingDelay called.");
+        this.localPlayer = getLocalPlayer();
+        while (!localPlayer.isStandingStill())
         {
-            while (!localPlayer.isStandingStill())
+            try
             {
                 TimeUnit.MILLISECONDS.sleep(randomNumberGenerator());
             }
+            catch (InterruptedException e)
+            {
+                log("Did not sleep.");
+            }
         }
-        catch (InterruptedException e)
-        {
-            log("Didn't fish-delay.");
-        }
+        log("currentlyFishingDelay exited");
+    }
+
+    private void ensureWalking()
+    {
+        if (walkingObject.isRunEnabled())
+            walkingObject.toggleRun();
     }
 
     @Override
