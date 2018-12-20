@@ -17,8 +17,6 @@ import java.util.concurrent.TimeUnit;
 public class Tester extends AbstractScript
 {
 
-    private final int FISHING_ANIMATION = 623;
-
     @Override
     public void onStart() {
         super.onStart();
@@ -27,9 +25,13 @@ public class Tester extends AbstractScript
     @Override
     public int onLoop()
     {
+<<<<<<< Updated upstream
         Dialogues dialogues = getDialogues();
         log(String.valueOf(dialogues.inDialogue()));
         stop();
+=======
+        //Need to find a way to notice the notification and to close the dialog and end the fishing() method.
+>>>>>>> Stashed changes
         return 10000;
     }
 
